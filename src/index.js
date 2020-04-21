@@ -18,7 +18,7 @@ onAuthStateChanged(function(user) {
     document.getElementById('root')
   );
 });
-  
+
 ReactDOM.render(
   <React.StrictMode>
     <Loading />

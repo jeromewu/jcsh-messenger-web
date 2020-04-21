@@ -2,10 +2,10 @@
 
 let firebase = window.firebase;
 
-if (window.location.hostname === 'localhost') {
+if (typeof firebase === 'undefined') {
   firebase = {
     auth: () => ({
-      onAuthStateChanged: () => {},
+      onAuthStateChanged: cb => setTimeout(() => cb(false), 100),
       signInWithEmailAndPassword: () => {},
     }),
   };

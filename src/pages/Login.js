@@ -43,8 +43,8 @@ export default () => {
   const onLogin = async () => {
     try {
       await auth(email, password);
-      history.push('/main');
       setMsg("");
+      history.push('/main');
     } catch(e) {
       setMsg("帳號或密碼錯誤");
     }

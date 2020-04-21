@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 import muiTheme from './utils/muiTheme';
 import Login from './pages/Login';
+import Main from './pages/Main';
 
 function App({ login }) {
   return (
@@ -18,7 +19,7 @@ function App({ login }) {
             {login ? <Redirect to="/main" /> : <Login />}
           </Route>
           <Route exact path="/main">
-            {!login ? <Redirect to="/" /> : <p>Main</p>}
+            {!login ? <Redirect to="/" /> : <Main />}
           </Route>
         </Switch>
       </Router>
