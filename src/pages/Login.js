@@ -72,6 +72,12 @@ export default () => {
               label="教室"
               value={email}
               onChange={({ target: { value } }) => setEmail(value)}
+              onKeyPress={(ev => {
+                if (ev.key === 'Enter') {
+                  onLogin();
+                  ev.preventDefault();
+                }
+              })}
             />
             <br/>
             <TextField
@@ -79,6 +85,12 @@ export default () => {
               label="密碼"
               value={password}
               onChange={({ target: { value } }) => setPassword(value)}
+              onKeyPress={(ev => {
+                if (ev.key === 'Enter') {
+                  onLogin();
+                  ev.preventDefault();
+                }
+              })}
             />
             <p align="center" className={classes.message}>{msg}</p>
           </div>
