@@ -2,11 +2,26 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import Loading from './pages/Loading';
 import * as serviceWorker from './serviceWorker';
+import { onAuthStateChanged } from './utils/firebase-helper';
 
+onAuthStateChanged(function(user) {
+  let login = false;
+  if (user) {
+    login = true
+  }
+  ReactDOM.render(
+    <React.StrictMode>
+      <App login={login} />
+    </React.StrictMode>,
+    document.getElementById('root')
+  );
+});
+  
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Loading />
   </React.StrictMode>,
   document.getElementById('root')
 );

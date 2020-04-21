@@ -1,12 +1,27 @@
 import React from 'react';
 import { ThemeProvider } from '@material-ui/core/styles';
-import muiTheme from './muiTheme';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+} from 'react-router-dom';
+import muiTheme from './utils/muiTheme';
 import Login from './pages/Login';
 
-function App() {
+function App({ login }) {
   return (
     <ThemeProvider theme={muiTheme}>
-      <Login />
+      <Router>
+        <Switch>
+          <Route exact path="/">
+            {login ? <Redirect to="/main" /> : <Login />}
+          </Route>
+          <Route exact path="/main">
+            {!login ? <Redirect to="/" /> : <p>Main</p>}
+          </Route>
+        </Switch>
+      </Router>
     </ThemeProvider>
   );
 }
