@@ -11,11 +11,13 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline';
+import ChatBubbleIcon from '@material-ui/icons/ChatBubble';
 import TextField from '@material-ui/core/TextField';
 import SendIcon from '@material-ui/icons/Send';
 import IconButton from '@material-ui/core/IconButton';
+import { getUser, getDBOnce, getDBRef, signOut } from '../utils/firebase-helper';
 
-const drawerWidth = 384;
+const drawerWidth = 240;
 
 const useStyles = makeStyles({
   root: {
@@ -74,22 +76,106 @@ const useStyles = makeStyles({
   },
   inputBtn: {
   },
+  boldText: {
+    fontWeight: 'bold',
+  },
 });
 
 export default () => {
+  const usePrevious = (value) => {
+    // The ref object is a generic container whose current property is mutable ...
+    // ... and can hold any value, similar to an instance property on a class
+    const ref = useRef();
+
+    // Store current value in ref
+    useEffect(() => {
+      ref.current = value;
+    }, [value]); // Only re-run if value changes
+
+    // Return previous value (happens before update in useEffect above)
+    return ref.current;
+  };
+  const name = getUser().email.split('@')[0];
+  const uid = getUser().uid;
   const classes = useStyles();
   const bottomRef = useRef(null);
-  const [messages, setMessages] = useState([]);
-  const [curMessage, setCurMessage] = useState("");
+  const [channels, setChannels] = useState({});
+  const [channel, setChannel] = useState("");
+  const [message, setMessage] = useState("");
+  const [counts, setCounts] = useState({});
+  const [updated, setUpdated] = useState({});
+  const prevCounts = usePrevious(counts);
+
+  const getMessages = () => (
+    channel.length !== 0
+      ? (channels[channel].messages || {})
+      : {}
+  );
+
   const sendMessage = () => {
-    messages.push({
-      name: 's101',
-      message: curMessage,
+    getDBRef(`channels/${channel}/messages`).push().set({
+      name,
+      message,
       date: Date.now(),
     });
-    setMessages(messages);
-    setCurMessage("");
+    setMessage("");
   };
+
+  const switchChannel = (chan) => {
+    setChannel(chan);
+    setUpdated({ ...updated, [chan]: false });
+  };
+
+  const listenChannel = (chan) => {
+    getDBRef(`channels/${chan}`)
+      .on('value', function(snapshot) {
+      const msgs = snapshot.val();
+      if (msgs !== null) {
+        setChannels({
+          [chan]: msgs,
+        });
+        setCounts({
+          [chan]: Object.keys(msgs.messages || {}).length,
+        });
+        setChannel(chan);
+      }
+    });
+  };
+
+  const listenAllChannels = () => {
+    getDBRef('channels')
+      .on('value', function(snapshot) {
+      const chans = snapshot.val();
+      if (chans !== null) {
+        setChannels(chans);
+        setCounts(Object.keys(chans).reduce((acc, k) => {
+          acc[k] = Object.keys(chans[k].messages || {}).length;
+          return acc;
+        }, {}));
+      }
+    });
+  };
+
+  useEffect(() => {
+    let u = { ...updated };
+    Object.keys(channels).forEach((id) => {
+      if (typeof prevCounts[id] !== 'undefined' && prevCounts[id] !== counts[id] && id !== channel) {
+        u[id] = true;
+      }
+    });
+    setUpdated(u);
+  }, [channels, prevCounts, counts, updated, channel]);
+
+  useEffect(() => {
+    getDBOnce('channels')
+      .then(() => {
+        listenAllChannels();
+      })
+      .catch(() => {
+        listenChannel(uid);
+      });
+  }, [uid]);
+
   useEffect(() => {
     bottomRef.current.scrollIntoView({ behavior: 'smooth' });
   });
@@ -111,17 +197,29 @@ export default () => {
           alignItems="center"
         >
           <AccountCircleIcon />
-          <span className={classes.name}>s101</span>
+          <span className={classes.name}>{name}</span>
         </Grid>
         <Divider />
         <Grid
           className={classes.listContr}
         >
           <List>
-            {Array(3).fill(0).map((text, index) => (
-              <ListItem button key={`Channel #${index}`}>
-                <ListItemIcon><ChatBubbleOutlineIcon /></ListItemIcon>
-                <ListItemText primary={`Channel #${index}`} />
+            {Object.keys(channels).map((id) => (
+              <ListItem
+                key={id}
+                button
+                onClick={() => switchChannel(id)}
+              >
+                <ListItemIcon>
+                  {updated[id] && channel !== id ? <ChatBubbleIcon color="secondary"/> : <ChatBubbleOutlineIcon />}
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <span className={channel === id ? classes.boldText : ''}>
+                      {`${channels[id].name} (${counts[id]})`}
+                    </span>
+                  }
+                />
               </ListItem>
             ))}
           </List>
@@ -131,6 +229,7 @@ export default () => {
           className={classes.signOut}
           color="secondary"
           size="large"
+          onClick={() => signOut()}
         >
           登出
         </Button>
@@ -143,7 +242,7 @@ export default () => {
           justify="center"
           alignItems="center"
         >
-          Channel #1
+          {channel.length !== 0 ? channels[channel].name : ""}
         </Grid>
         <Divider />
         <Grid
@@ -155,17 +254,23 @@ export default () => {
             className={classes.messages}
           >
             <List>
-              {messages.map(({ name, message, date }, index) => (
-                <ListItem key={`Channel #${index}`}>
-                  <ListItemAvatar>
-                    <AccountCircleIcon color="primary" fontSize="large" />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={message}
-                    secondary={`${name} @ ${(new Date(date)).toLocaleString()}`}
-                  />
-                </ListItem>
-              ))}
+              {Object.keys(getMessages()).map((id) => { 
+                const { name: n, message: m, date } = getMessages()[id];
+                return (
+                  <ListItem key={id}>
+                    <ListItemAvatar>
+                      <AccountCircleIcon
+                        color={name === n ? 'primary' : 'default'}
+                        fontSize="large"
+                      />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={m}
+                      secondary={`${n} @ ${(new Date(date)).toLocaleString()}`}
+                    />
+                  </ListItem>
+                );
+              })}
             </List>
             <div ref={bottomRef} />
           </div>
@@ -175,8 +280,8 @@ export default () => {
             <TextField
               className={classes.input}
               label="在此輸入訊息"
-              value={curMessage}
-              onChange={({ target: { value } }) => setCurMessage(value)}
+              value={message}
+              onChange={({ target: { value } }) => setMessage(value)}
               onKeyPress={(ev => {
                 if (ev.key === 'Enter') {
                   sendMessage();
@@ -184,6 +289,7 @@ export default () => {
                 }
               })}
               autoFocus
+              disabled={channel.length === 0}
             />
             <IconButton
               className={classes.inputBtn}

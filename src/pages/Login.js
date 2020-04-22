@@ -5,7 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { useHistory } from 'react-router-dom';
-import { auth } from '../utils/firebase-helper';
+import { signIn } from '../utils/firebase-helper';
 
 const useStyles = makeStyles({
   contr: {
@@ -42,7 +42,11 @@ export default () => {
 
   const onLogin = async () => {
     try {
-      await auth(email, password);
+      if (email.includes('@jcsh.edu.tw')) {
+        await signIn(email, password);
+      } else {
+        await signIn(`${email}@jcsh.edu.tw`, password);
+      }
       setMsg("");
       history.push('/main');
     } catch(e) {
