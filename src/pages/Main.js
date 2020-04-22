@@ -162,7 +162,7 @@ export default () => {
     const doNotify = (from) => {
       if (!notified) {
         notified = true;
-        new Notification(`竹崎高中 即時通 說： \n已收到來自 ${from} 的新訊息`);
+        new Notification(`竹崎高中 即時通 說： \n頻道 ${from} 收到新訊息`);
       }
     };
     Object.keys(channels).forEach((id) => {
