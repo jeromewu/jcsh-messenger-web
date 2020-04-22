@@ -164,7 +164,7 @@ export default () => {
       }
     });
     setUpdated(u);
-  }, [channels, prevCounts, counts, updated, channel]);
+  }, [counts]);
 
   useEffect(() => {
     getDBOnce('channels')
