@@ -6,6 +6,10 @@ import Loading from './pages/Loading';
 import * as serviceWorker from './serviceWorker';
 import { onAuthStateChanged } from './utils/firebase-helper';
 
+if ("Notification" in window && Notification.permission !== "denied") {
+  Notification.requestPermission();
+}
+
 onAuthStateChanged(function(user) {
   let login = false;
   if (user) {

@@ -158,9 +158,24 @@ export default () => {
 
   useEffect(() => {
     let u = { ...updated };
+    let notified = false;
+    const doNotify = (from) => {
+      if (!notified) {
+        notified = true;
+        new Notification(`竹崎高中 即時通 說： \n已收到來自 ${from} 的新訊息`);
+      }
+    };
     Object.keys(channels).forEach((id) => {
-      if (typeof prevCounts[id] !== 'undefined' && prevCounts[id] !== counts[id] && id !== channel) {
-        u[id] = true;
+      if (
+        typeof prevCounts[id] !== 'undefined' &&
+        prevCounts[id] !== counts[id]
+      ) {
+        if (id !== channel) {
+          u[id] = true;
+          doNotify(channels[id].name);
+        } else if (id === channel && document.visibilityState === 'hidden') {
+          doNotify(channels[id].name);
+        }
       }
     });
     setUpdated(u);
@@ -184,7 +199,7 @@ export default () => {
       <Drawer
         className={classes.drawer}
         variant="permanent"
-        anchor="left"
+        anchor="left" 
         classes={{
           paper: classes.drawerPaper,
         }}
