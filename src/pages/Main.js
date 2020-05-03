@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
+//import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -15,9 +15,14 @@ import ChatBubbleIcon from '@material-ui/icons/ChatBubble';
 import TextField from '@material-ui/core/TextField';
 import SendIcon from '@material-ui/icons/Send';
 import IconButton from '@material-ui/core/IconButton';
-import { getUser, getDBOnce, getDBRef, signOut } from '../utils/firebase-helper';
+import {
+  getUser,
+  getDBOnce,
+  getDBRef,
+  //signOut,
+} from '../utils/firebase-helper';
 
-const drawerWidth = 240;
+const drawerWidth = 368;
 
 const useStyles = makeStyles({
   root: {
@@ -104,6 +109,7 @@ export default () => {
   const [message, setMessage] = useState("");
   const [counts, setCounts] = useState({});
   const [updated, setUpdated] = useState({});
+  const [names, setNames] = useState({});
   const prevCounts = usePrevious(counts);
 
   const getMessages = () => (
@@ -192,6 +198,13 @@ export default () => {
   }, [uid]);
 
   useEffect(() => {
+    getDBOnce('names')
+      .then((snap) => {
+        setNames(snap.val());
+      });
+  }, []);
+
+  useEffect(() => {
     bottomRef.current.scrollIntoView({ behavior: 'smooth' });
   });
   return (
@@ -212,7 +225,7 @@ export default () => {
           alignItems="center"
         >
           <AccountCircleIcon />
-          <span className={classes.name}>{name}</span>
+          <span className={classes.name}>{`${name} (${names[name]})`}</span>
         </Grid>
         <Divider />
         <Grid
@@ -231,7 +244,7 @@ export default () => {
                 <ListItemText
                   primary={
                     <span className={channel === id ? classes.boldText : ''}>
-                      {`${channels[id].name} (${counts[id]})`}
+                      {`(${counts[id]}) ${channels[id].name} (${names[channels[id].name]})`}
                     </span>
                   }
                 />
@@ -240,6 +253,16 @@ export default () => {
           </List>
         </Grid>
         <Divider />
+        <Grid
+          className={classes.greeting}
+          container
+          direction="row"
+          justify="center"
+          alignItems="center"
+        >
+          <span>請直接關閉瀏覽器或分頁即可</span>
+        </Grid>
+        {/*
         <Button
           className={classes.signOut}
           color="secondary"
@@ -248,6 +271,7 @@ export default () => {
         >
           登出
         </Button>
+        */}
       </Drawer>
       <div className={classes.main}>
         <Grid
@@ -281,7 +305,7 @@ export default () => {
                     </ListItemAvatar>
                     <ListItemText
                       primary={m}
-                      secondary={`${n} @ ${(new Date(date)).toLocaleString()}`}
+                      secondary={`${n} (${names[n]}) @ ${(new Date(date)).toLocaleString()}`}
                     />
                   </ListItem>
                 );

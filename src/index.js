@@ -10,18 +10,22 @@ if ("Notification" in window && Notification.permission !== "denied") {
   Notification.requestPermission();
 }
 
-onAuthStateChanged(function(user) {
-  let login = false;
-  if (user) {
-    login = true
-  }
-  ReactDOM.render(
-    <React.StrictMode>
-      <App login={login} />
-    </React.StrictMode>,
-    document.getElementById('root')
-  );
-});
+const enabled = true;
+
+if (enabled) {
+  onAuthStateChanged(function(user) {
+    let login = false;
+    if (user) {
+      login = true
+    }
+    ReactDOM.render(
+      <React.StrictMode>
+        <App login={login} />
+      </React.StrictMode>,
+      document.getElementById('root')
+    );
+  });
+}
 
 ReactDOM.render(
   <React.StrictMode>

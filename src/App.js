@@ -9,6 +9,7 @@ import {
 import muiTheme from './utils/muiTheme';
 import Login from './pages/Login';
 import Main from './pages/Main';
+import SignOut from './pages/SignOut';
 
 function App({ login }) {
   return (
@@ -20,6 +21,9 @@ function App({ login }) {
           </Route>
           <Route exact path="/main">
             {!login ? <Redirect to="/" /> : <Main />}
+          </Route>
+          <Route exact path="/sign-out">
+            <SignOut />
           </Route>
         </Switch>
       </Router>
