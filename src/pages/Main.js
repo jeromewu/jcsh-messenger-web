@@ -260,7 +260,7 @@ export default () => {
           justify="center"
           alignItems="center"
         >
-          <span>請直接關閉瀏覽器或分頁即可</span>
+          <span>結束對話時，直接關閉瀏覽器或分頁即可</span>
         </Grid>
         {/*
         <Button
